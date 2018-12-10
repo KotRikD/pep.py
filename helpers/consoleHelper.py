@@ -26,7 +26,7 @@ def printServerStartHeader(asciiArt=True):
 
 	printColored("> Welcome to pep.py osu!bancho server v{}".format(glob.VERSION), bcolors.GREEN)
 	printColored("> Made by the Ripple and Akatsuki teams", bcolors.GREEN)
-	printColored("> {}https://github.com/cmyui/pep.py".format(bcolors.UNDERLINE), bcolors.GREEN)
+	printColored("> {}https://github.com/osuAkatsuki/pep.py".format(bcolors.UNDERLINE), bcolors.GREEN)
 	printColored("> Press CTRL+C to exit\n", bcolors.GREEN)
 
 def printNoNl(string):
