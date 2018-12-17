@@ -116,13 +116,20 @@ def handle(tornadoRequest):
 		if userFlags > 0: # Pending public bans. Such as chargebacks, etc.
 			flagReason = userUtils.getFlagReason(userID)
 			if userFlags-int(time.time()) < 0:
-				responseToken.enqueue(serverPackets.notification("Your account has been restricted due to a pending restriction.\n\nReason: {}".format(flagReason)))
+				responseToken.enqueue(serverPackets.notification("Your account has been restricted due to a pending restriction not being dealt with.\n\nReason: {}".format(flagReason)))
 				userUtils.restrict(userID)
 				userUtils.setUserFlags(userID, 0)
-				log.cmyui("User {} has been automatically restricted due to : {}.".format(userID, flagReason), discord="cm")
+				log.cmyui("User {} has been automatically restricted due to not dealing with pending restriction. Reason : {}.".format(userID, flagReason), discord="cm")
 			else:
-				responseToken.enqueue(serverPackets.notification("Your account has been flagged with an automatic restriction.\n\nIt will occur at {time}.\n"
-					"Reason: {reason}\n\n{endText}".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason, endText="Chargebacks can be repaid within a week to avoid being restricted for this behaviour." if "char" in flagReason else "Automatic bans are only applied when there is an incentive to keep you away from your ban.")))
+				if "charge" in flagReason:
+					responseToken.enqueue(serverPackets.notification("Your account has been flagged with an automatic restriction.\n\nIt will occur at {time} if not dealt with.\n"
+						"Reason: {reason}\n\nChargebacks can be repaid within a week to avoid being restricted for this behaviour.".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason)))
+				elif "live" in flagReason:
+					responseToken.enqueue(serverPackets.notification("Your account has been flagged with an automatic restriction.\n\nIt will occur at {time} if not dealt with.\n"
+						"Reason: {reason}\n\nThis means you are required to submit a liveplay to avoid this. This only happens in cases when we are confident in foul play; and are offering you this opportunity as a final stance.".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason)))
+				else:
+					responseToken.enqueue(serverPackets.notification("Your account has been flagged with an automatic restriction.\n\nIt will occur at {time} if not dealt with.\n"
+						"Reason: {reason}\n\nAutomatic bans are only applied when there is an incentive to keep you away from your ban..".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason)))
 
 		# Send message if premium / donor expires soon
 		# ok spaghetti code time
