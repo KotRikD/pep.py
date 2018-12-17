@@ -830,6 +830,37 @@ def report(fro, chan, message):
 	return False
 
 # cmyui's commands
+def linkDiscord(fro, chan, message):
+	discordID = message[0]
+	userID = userUtils.getID(fro)
+
+	if not discordID.isdigit() or len(discordID) != 18:
+		return "Please use a valid discord User ID. You can get it like (so)[https://i.namir.in//ZuO.png]."
+
+	privileges = userUtils.getPrivileges(userID)
+
+	if privileges & 8388608:
+		roleID = 503292337804410880
+	elif privileges & 4:
+		roleID = 367104098966831114
+	else:
+		return "Sorry but it does not seem like you've donated to Akatsuki. If this is incorrect, please contact cmyui."
+
+	previousAkatsuki = glob.db.fetch("SELECT verified FROM discord_roles WHERE userid = {}".format(userID))
+	previousDiscord = glob.db.fetch("SELECT verified FROM discord_roles WHERE discordid = {}".format(int(discordID)))
+
+	if previousAkatsuki:
+		if previousAkatsuki['verified'] == 1:
+			return "Your account is already linked to a discord account. To unlink, you will need to contact cmyui."
+
+	if previousDiscord:
+		if previousDiscord['verified'] == 1:
+			return "This discord account is already linked (and verified) to another Akatsuki account."
+
+	glob.db.execute("INSERT INTO discord_roles (userid, discordid, roleid, verified) VALUES ('{}', '{}', '{}', 0)".format(userID, int(discordID), roleID))
+
+	return "Okay. Your discord should be linked now <3. To finish verification, please use $linkosu in the discord now to complete verification."
+
 def unenqueueRestriction(fro, chan, message):
 	message = [x.lower() for x in message]
 	target = message[0]
@@ -1853,6 +1884,10 @@ commands = [
 		"syntax": "<announcement>",
 		"privileges": privileges.ADMIN_SEND_ALERTS,
 		"callback": postAnnouncement
+	}, {
+		"trigger": "!linkdiscord",
+		"syntax": "<discordID>",
+		"callback": linkDiscord
 	}, {
 		"trigger": "!map",
 		"syntax": "<rank/love/unrank> <set/map> <ID> <gamemode>",
