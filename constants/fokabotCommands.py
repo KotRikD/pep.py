@@ -834,7 +834,7 @@ def linkDiscord(fro, chan, message):
 	discordID = message[0]
 	userID = userUtils.getID(fro)
 
-	if not discordID.isdigit() or len(discordID) != 18:
+	if not discordID.isdigit() or (len(discordID) > 16 and len(discordID) < 19):
 		return "Please use a valid discord User ID. You can get it like (so)[https://i.namir.in//ZuO.png]."
 
 	privileges = userUtils.getPrivileges(userID)
