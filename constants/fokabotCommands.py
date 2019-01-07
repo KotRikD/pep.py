@@ -184,7 +184,7 @@ def silence(fro, chan, message):
 	userID = userUtils.getID(fro)
 
 	# Make sure target is not the bot / super admin
-	if targetUserID < 1002 and userID > 1002:
+	if targetUserID == 1001 and userID != 1001:
 		return "Nice try."
 
 	# Make sure the user exists
@@ -260,11 +260,11 @@ def ban(fro, chan, message):
 		return "{}: user not found".format(target)
 
 	# Make sure target is not the bot
-	if targetUserID < 1002 and userID > 1002:
+	if targetUserID == 1001 and userID != 1001:
 		return "Nice try."
 
 	if not reason:
-		return "Please specify a reason for the restriction."
+		return "Please specify a reason for the ban."
 	
 	# Set allowed to 0
 	userUtils.ban(targetUserID)
@@ -311,7 +311,7 @@ def restrict(fro, chan, message):
 		return "{}: user not found".format(target)
 
 	# Make sure target is not the bot
-	if targetUserID < 1002 and userID > 1002:
+	if targetUserID == 1001 and userID != 1001:
 		log.cmyui("{} attempted to restrict immortal user {}.".format(username, targetUserID), discord="cm")
 		return "Nice try."
 
@@ -329,12 +329,14 @@ def restrict(fro, chan, message):
 	log.rap(userID, "has restricted {} ({}) for: {}".format(target, targetUserID, reason), True)
 	userUtils.appendNotes(targetUserID, "{} restricted for: {}".format(username, reason))
 
+	"""
 	url = glob.conf.config["webhook"]["restricted"]
 	embed = Webhook(url, color=123123)
 	embed.set_author(name=username, icon='http://a.akatsuki.pw/{}'.format(userID), url="http://akatsuki.pw/u/{}".format(userID))
 	embed.set_title(title="{} has been restricted for {}".format(target, reason))
 
 	embed.post()
+	"""
 	return "{} has been restricted.".format(target)
 
 def unrestrict(fro, chan, message):
@@ -866,6 +868,7 @@ def unenqueueRestriction(fro, chan, message):
 	target = message[0]
 
 	targetUserID = userUtils.getIDSafe(target)
+	userID = userUtils.getIDSafe(fro)
 
 	userUtils.setUserFlags(targetUserID, 0, author=userID)
 
@@ -891,7 +894,7 @@ def enqueueRestriction(fro, chan, message):
 	userID = userUtils.getID(fro)
 
 	# Make sure target is not the bot / super admin
-	if targetUserID < 1002 and userID > 1002:
+	if targetUserID == 1001 and userID != 1001:
 		return "Nice try."
 
 	# Make sure the user exists
@@ -1046,7 +1049,7 @@ def changeUsername(fro, chan, message): # Change a users username, ingame.
 	userID = userUtils.getIDSafe(fro)
 	privileges = userUtils.getPrivileges(targetUserID) # grab this to make admins not able to change non-premium's usernames. nazi mode.
 
-	if targetUserID < 1002 and userID > 1002:
+	if targetUserID == 1001 and userID != 1001:
 		return "Nope."
 
 	if not privileges & 8388608:
@@ -1931,12 +1934,12 @@ commands = [
 	}, {
 		"trigger": "!erestrict",
 		"syntax": "<target> <amount> <unit(s/m/h/d/w)> <reason>",
-		"privileges": privileges.ADMIN_CAKER,
+		"privileges": privileges.ADMIN_BAN_USERS,
 		"callback": enqueueRestriction
 	}, {
 		"trigger": "!eunrestrict",
 		"syntax": "<target>",
-		"privileges": privileges.ADMIN_CAKER,
+		"privileges": privileges.ADMIN_BAN_USERS,
 		"callback": unenqueueRestriction
 	}, {
 		"trigger": "!removesilence",
