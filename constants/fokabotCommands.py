@@ -21,7 +21,7 @@ from helpers import chatHelper as chat
 from common.web import cheesegull
 from urllib.parse import urlencode
 
-from common.akatsuki.discord_hooks import Webhook
+#from common.akatsuki.discord_hooks import Webhook
 
 def bloodcatMessage(fro, beatmapID):
 	userID = userUtils.getID(fro)
@@ -329,14 +329,6 @@ def restrict(fro, chan, message):
 	log.rap(userID, "has restricted {} ({}) for: {}".format(target, targetUserID, reason), True)
 	userUtils.appendNotes(targetUserID, "{} restricted for: {}".format(username, reason))
 
-	"""
-	url = glob.conf.config["webhook"]["restricted"]
-	embed = Webhook(url, color=123123)
-	embed.set_author(name=username, icon='http://a.akatsuki.pw/{}'.format(userID), url="http://akatsuki.pw/u/{}".format(userID))
-	embed.set_title(title="{} has been restricted for {}".format(target, reason))
-
-	embed.post()
-	"""
 	return "{} has been restricted.".format(target)
 
 def unrestrict(fro, chan, message):
@@ -868,9 +860,8 @@ def unenqueueRestriction(fro, chan, message):
 	target = message[0]
 
 	targetUserID = userUtils.getIDSafe(target)
-	userID = userUtils.getIDSafe(fro)
 
-	userUtils.setUserFlags(targetUserID, 0, author=userID)
+	userUtils.setUserFlags(targetUserID, 0, author=userUtils.getIDSafe(fro))
 
 	# Log message
 	msg = "{}'s scheduled restriction removed.".format(target)
@@ -1093,7 +1084,6 @@ def requestMap(fro, chan, message): # Splitting these up due to bancho explosion
 
 	if chan.startswith('#') and chan != '#request' and not privileges & 8388608: # only run in pms or #request, unless premium
 		return "Map requests are not permitted in regular channels, please do so in #request, or a PM to Charlotte."
-
 
 	# Grab beatmapData from db
 	beatmapData = glob.db.fetch("SELECT beatmapset_id, ranked FROM beatmaps WHERE beatmap_id = {} LIMIT 1;".format(mapID))
