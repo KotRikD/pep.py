@@ -451,8 +451,8 @@ class match:
 				"Oh by the way, in case you're playing unranked or broken maps "
 				"that are now available through Akatsuki's osu!direct, you can "
 				"type '!bloodcat' in the chat to get a download link for the "
-				"currently selected map from Bloodcat (Premium members have access"
-				"to faster downloads, and !q)"
+				"currently selected map from Bloodcat. (Premium members have access "
+				"to faster downloads, using !q)"
 			)
 			self.bloodcatAlert = True
 

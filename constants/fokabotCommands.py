@@ -1220,27 +1220,28 @@ def getBeatmapRequest(fro, chan, message): # Grab a random beatmap request
 
 	if request is not None:
 		username = userUtils.getUsername(request['userid'])
+
+		""" debug logging
 		log.cmyui('userid: {} | type: {}'.format(request['userid'], request['type']), discord="cm")
+		"""
 
-		if request['type'] == 'b' or 'm':
-			mapData = glob.db.fetch("SELECT song_name, ranked, mode FROM beatmaps WHERE beatmap_id = {};".format(request['bid']))
-		elif request['type'] == 's':
-			mapData = glob.db.fetch("SELECT song_name, ranked, mode FROM beatmaps WHERE beatmapset_id = {} ORDER BY difficulty_std DESC LIMIT 1;".format(request['bid']))
+		mapData = glob.db.fetch("SELECT song_name, ranked, mode FROM beatmaps WHERE beatmap{mapset}_id = {beatmapID} ORDER BY difficulty_std DESC LIMIT 1;".format(mapset='set' if request['type'] == 's' else '', beatmapID=request['bid']))
+
+		if mapData is not None:
+			if mapData['mode'] == 0:
+				mode = 'osu!'
+			elif mapData['mode'] == 1:
+				mode = 'osu!taiko'
+			elif mapData['mode'] == 2:
+				mode = 'osu!catch'
+			elif mapData['mode'] == 3:
+				mode = 'osu!mania'
 		else:
-			return "Error with beatmap request['type']. This could mean there are no more requests left!"
-
-		if mapData['mode'] == 0:
-			mode = 'osu!'
-		elif mapData['mode'] == 1:
-			mode = 'osu!taiko'
-		elif mapData['mode'] == 2:
-			mode = 'osu!catch'
-		elif mapData['mode'] == 3:
-			mode = 'osu!mania'
+			log.error("FAILURE - getBeatmapRequest | mapData is NoneType.\nValues: bid: {}, type: {}, request_id: {}.".format(request['bid'], request['type'], request['id']))
+			return "mapData is returning NoneType. Please report this to cmyui with the following values: bid: {}, type: {}, request_id: {}. Thanks!".format(request['bid'], request['type'], request['id'])
 
 		glob.db.execute("DELETE FROM rank_requests WHERE id = {};".format(request['id']))
 
-		#return "[https://akatsuki.pw/u/{} {}] nominated {} beatmap: [https://osu.ppy.sh/{}/{} {}] for status change. [https://akatsuki.pw/{}/{} Akatsuki beatmap Link]. The request has been deleted, so please decide it's status.".format(request['userid'], username, mode, request['type'], request['bid'], mapData['song_name'], request['type'], request['bid'])
 		return "[https://akatsuki.pw/u/{userID} {username}] nominated {gameMode} beatmap: [https://osu.ppy.sh/{SetOrMap}/{beatmapID} {songName}] for status change. {AkatsukiBeatmapLink}The request has been deleted, so please decide it's status.".format(userID=request['userid'], username=username, gameMode=mode, SetOrMap='s' if request['type'] == 's' else 'b', beatmapID=request['bid'], songName=mapData['song_name'], AkatsukiBeatmapLink='[https://akatsuki.pw/b/{} Akatsuki beatmap Link]. '.format(request['bid']) if request['type'] == 'b' or request['type'] == 'm' else '')
 	else:
 		return "All nominations have been checked. Thank you for your hard work! :)"
