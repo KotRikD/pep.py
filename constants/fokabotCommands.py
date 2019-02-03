@@ -1126,12 +1126,6 @@ def editMap(fro, chan, message): # miniature version of old editMap. Will most l
 	if chan.startswith('#') and chan != '#admin' and not privileges & 8388608:
 		return "Map ranking is not permitted in regular channels, please do so in PMs with Charlotte (or #admin if administrator)."
 
-	# Silence the target for a brief moment. This is needed because threading issues dddddddd
-	if token is not None:
-		token.silence(10, "Map Request: Auto silence")
-	else:
-		return "Somehow the server could not grab your token. Please report this directly to cmyui."
-
 	# Grab beatmapData from db
 	try:
 		beatmapData = glob.db.fetch("SELECT beatmapset_id, song_name, ranked FROM beatmaps WHERE beatmap_id = {} LIMIT 1".format(mapID))
@@ -1157,7 +1151,7 @@ def editMap(fro, chan, message): # miniature version of old editMap. Will most l
 	else:
 		return "Please specify whether your request is a single difficulty, or a full set (map/set). Example: '!map unrank/rank/love set/map 256123 mania'."
 
-	# User is QAT
+	# User is BN
 	if privileges & 256:
 
 		# Figure out which ranked status we're requesting to
@@ -1178,7 +1172,6 @@ def editMap(fro, chan, message): # miniature version of old editMap. Will most l
 
 		if beatmapData['ranked'] == rankTypeID:
 			return "This map is already {}ed".format(rankType)
-
 
 		if mapType == 'set':
 			numDiffs = glob.db.fetch("SELECT COUNT(id) FROM beatmaps WHERE beatmapset_id = {}".format(beatmapData["beatmapset_id"]))
@@ -1214,7 +1207,8 @@ def postAnnouncement(fro, chan, message): # Post to #announce ingame
 	chat.sendMessage(glob.BOT_NAME, "#announce", announcement)
 	return "Announcement successfully sent."
 
-def getBeatmapRequest(fro, chan, message): # Grab a random beatmap request
+def getBeatmapRequest(fro, chan, message): # Grab a random beatmap request. TODO: Add gamemode handling to this and !request
+	#gameMode = message[0]
 	timeLimit = int(time.time()) - 169200
 	request = glob.db.fetch("SELECT * FROM rank_requests WHERE time > {} LIMIT 1;".format(timeLimit))
 
@@ -1225,7 +1219,7 @@ def getBeatmapRequest(fro, chan, message): # Grab a random beatmap request
 		log.cmyui('userid: {} | type: {}'.format(request['userid'], request['type']), discord="cm")
 		"""
 
-		mapData = glob.db.fetch("SELECT song_name, ranked, mode FROM beatmaps WHERE beatmap{mapset}_id = {beatmapID} ORDER BY difficulty_std DESC LIMIT 1;".format(mapset='set' if request['type'] == 's' else '', beatmapID=request['bid']))
+		mapData = glob.db.fetch("SELECT song_name, ranked, mode FROM beatmaps WHERE beatmap_id = {} ORDER BY difficulty_std DESC LIMIT 1;".format(request['bid']))
 
 		if mapData is not None:
 			if mapData['mode'] == 0:
@@ -1242,7 +1236,7 @@ def getBeatmapRequest(fro, chan, message): # Grab a random beatmap request
 
 		glob.db.execute("DELETE FROM rank_requests WHERE id = {};".format(request['id']))
 
-		return "[https://akatsuki.pw/u/{userID} {username}] nominated {gameMode} beatmap: [https://osu.ppy.sh/{SetOrMap}/{beatmapID} {songName}] for status change. {AkatsukiBeatmapLink}The request has been deleted, so please decide it's status.".format(userID=request['userid'], username=username, gameMode=mode, SetOrMap='s' if request['type'] == 's' else 'b', beatmapID=request['bid'], songName=mapData['song_name'], AkatsukiBeatmapLink='[https://akatsuki.pw/b/{} Akatsuki beatmap Link]. '.format(request['bid']) if request['type'] == 'b' or request['type'] == 'm' else '')
+		return "[https://akatsuki.pw/u/{userID} {username}] nominated {gameMode} beatmap: [https://osu.ppy.sh/b/{beatmapID} {songName}] for status change. {AkatsukiBeatmapLink}The request has been deleted, so please decide it's status.".format(userID=request['userid'], username=username, gameMode=mode, beatmapID=request['bid'], songName=mapData['song_name'], AkatsukiBeatmapLink='[https://akatsuki.pw/b/{} Akatsuki beatmap Link]. '.format(request['bid']))
 	else:
 		return "All nominations have been checked. Thank you for your hard work! :)"
 """ Unused - cmyui
