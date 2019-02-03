@@ -1299,7 +1299,7 @@ def promoteUser(fro, chan, message): # Set a users privileges ingame
 
 	if privilege == 'user':
 		priv = 3
-	elif privilege == 'bat':
+	elif privilege == 'bn':
 		priv = 267
 	elif privilege == 'mod':
 		priv = 786763
@@ -1312,7 +1312,7 @@ def promoteUser(fro, chan, message): # Set a users privileges ingame
 	elif privilege == 'owner':
 		priv = 7340031
 	else:
-		return "Invalid rankname (bat/mod/tournamentstaff/admin/developer/owner)"
+		return "Invalid rankname (bn/mod/tournamentstaff/admin/developer/owner)"
 
 	try:
 		glob.db.execute("UPDATE users SET privileges = %s WHERE id = %s LIMIT 1", [priv, targetUserID])
