@@ -1209,8 +1209,7 @@ def postAnnouncement(fro, chan, message): # Post to #announce ingame
 
 def getBeatmapRequest(fro, chan, message): # Grab a random beatmap request. TODO: Add gamemode handling to this and !request
 	#gameMode = message[0]
-	timeLimit = int(time.time()) - 169200
-	request = glob.db.fetch("SELECT * FROM rank_requests WHERE time > {} LIMIT 1;".format(timeLimit))
+	request = glob.db.fetch("SELECT * FROM rank_requests LIMIT 1;")
 
 	if request is not None:
 		username = userUtils.getUsername(request['userid'])
