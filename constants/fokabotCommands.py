@@ -653,7 +653,7 @@ def tillerinoLast(fro, chan, message):
 			FROM scores{relax}
 			LEFT JOIN beatmaps ON beatmaps.beatmap_md5=scores{relax}.beatmap_md5
 			LEFT JOIN users ON users.id = scores{relax}.userid
-			WHERE users.username = '{}'
+			WHERE users.username = '{}' AND scores{relax}.completed > 1
 			ORDER BY scores{relax}.time DESC
 			LIMIT 1""".format(fro, relax="_relax" if targetToken.relax else ""))
 		if data is None:
