@@ -1238,7 +1238,6 @@ def getBeatmapRequest(fro, chan, message): # Grab a random beatmap request. TODO
 		return "[https://akatsuki.pw/u/{userID} {username}] nominated {gameMode} beatmap: [https://osu.ppy.sh/b/{beatmapID} {songName}] for status change. {AkatsukiBeatmapLink}The request has been deleted, so please decide it's status.".format(userID=request['userid'], username=username, gameMode=mode, beatmapID=request['bid'], songName=mapData['song_name'], AkatsukiBeatmapLink='[https://akatsuki.pw/b/{} Akatsuki beatmap Link]. '.format(request['bid']))
 	else:
 		return "All nominations have been checked. Thank you for your hard work! :)"
-""" Unused - cmyui
 
 def discordTest(fro, chan, message):
 	try:
@@ -1248,6 +1247,7 @@ def discordTest(fro, chan, message):
 		return "not success. :("
 	return False
 
+""" Unused - cmyui
 def discordUserInfo(fro, chan, message): # ahahaha - cmyui
 	target = message[0].lower()
 
@@ -1994,6 +1994,11 @@ commands = [
 		"syntax": "<target>",
 		"privileges": privileges.ADMIN_BAN_USERS,
 		"callback": unban
+	}, {
+		"trigger": "!dt",
+		"syntax": "<message>",
+		"privileges": privileges.ADMIN_CAKER,
+		"callback": discordTest
 	}, {
 		"trigger": "!restrict",
 		"syntax": "<target> <reason>",
