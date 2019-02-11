@@ -116,20 +116,21 @@ def handle(tornadoRequest):
 		if userFlags > 0: # Pending public bans. Such as chargebacks, etc.
 			flagReason = userUtils.getFlagReason(userID)
 			if userFlags-int(time.time()) < 0:
-				responseToken.enqueue(serverPackets.notification("Your account has been restricted due to a pending restriction not being dealt with.\n\nReason: {}".format(flagReason)))
+				responseToken.enqueue(serverPackets.notification("Your account has been automatically restricted due to a pending restriction not being having been dealt with.\n\nReason: {}".format(flagReason)))
 				userUtils.restrict(userID)
 				userUtils.setUserFlags(userID, 0)
 				log.cmyui("User {} has been automatically restricted due to not dealing with pending restriction. Reason : {}.".format(userID, flagReason), discord="cm")
+				log.rap(userID, "{} has been restricted due to a pending restriction. Reason: {}.".format(username, flagReason))
 			else:
 				if "charge" in flagReason:
 					responseToken.enqueue(serverPackets.notification("Your account has been flagged with an automatic restriction.\n\nIt will occur at {time} if not dealt with.\n"
-						"Reason: {reason}\n\nChargebacks can be repaid within a week to avoid being restricted for this behaviour.".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason)))
+						"Reason: {reason}\n\nTo avoid being restricted for this behaviour, you can cancel or revert your chargeback before your restriction date.".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason)))
 				elif "live" in flagReason:
 					responseToken.enqueue(serverPackets.notification("Your account has been flagged with an automatic restriction.\n\nIt will occur at {time} if not dealt with.\n"
-						"Reason: {reason}\n\nThis means you are required to submit a liveplay to avoid this. This only happens in cases when we are confident in foul play; and are offering you this opportunity as a final stance.".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason)))
+						"Reason: {reason}\n\nThis means you are required to submit a liveplay to avoid this. This only happens in cases when we are confident in foul play; and are offering you this opportunity as a final stance to prove your legitimacy, against all the odds.".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason)))
 				else:
 					responseToken.enqueue(serverPackets.notification("Your account has been flagged with an automatic restriction.\n\nIt will occur at {time} if not dealt with.\n"
-						"Reason: {reason}\n\nAutomatic bans are only applied when there is an incentive to keep you away from your ban..".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason)))
+						"Reason: {reason}\n\nYou have until the restriction to deal with the issue.".format(time=datetime.utcfromtimestamp(int(userFlags)).strftime('%Y-%m-%d %H:%M:%S'), reason=flagReason)))
 
 		# Send message if premium / donor expires soon
 		# ok spaghetti code time
@@ -140,6 +141,7 @@ def handle(tornadoRequest):
 			if expireDate-int(time.time()) < 0:
 				userUtils.setPrivileges(userID, 3)
 				log.cmyui("{}'s donation perks have been removed as their time has run out.".format(username), discord="cm")
+				log.rap(userID, "User's donor perks have been removed as their time has run out.")
 				responseToken.enqueue(serverPackets.notification("Your {donorType} tag has expired! Thank you so much for the support, it really means everything to us. If you wish to keep supporting Akatsuki and you don't want to lose your {donorType} privileges, you can donate again by clicking on 'Support us' on Akatsuki's website.".format(donorType=donorType)))
 			elif expireDate-int(time.time()) <= 86400*3:
 				expireDays = round((expireDate-int(time.time()))/86400)
@@ -288,7 +290,7 @@ def handle(tornadoRequest):
 		# Using oldoldold client, we don't have client data. Force update.
 		# (we don't use enqueue because we don't have a token since login has failed)
 		responseData += serverPackets.forceUpdate()
-		responseData += serverPackets.notification("Custom clients of any kind are not allowed on Akatsuki. Please login using the current osu! client.")
+		responseData += serverPackets.notification("Custom clients of ANY kind are NOT PERMITTED on Akatsuki. Please login using the current osu! client.")
 		log.cmyui("User {} has triggered haxException in loginEvent.py", discord="cm")
 	except:
 		log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
