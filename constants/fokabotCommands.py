@@ -57,26 +57,12 @@ TODO: Change False to None, because False doesn't make any sense
 """
 
 def faq(fro, chan, message):
-	# TODO: Unhardcode this
-	messages = {
-		"rules": "Please make sure to check (Akatsuki's rules)[https://akatsuki.pw/doc/rules/]; they are probably quite standard to what you are used to.",
-		"swearing": "Please don't abuse swearing.",
-		"spam": "Please don't spam.. It will only end up in many silences and sad gamers.",
-		"offend": "Please don't offend other players.",
-		"discord": "Akatsuki has a public discord! Click (here)[https://discord.gg/5cBtMPW/] to join.",
-		"status": "Check the server status (here)[https://p.datadoghq.com/sb/71577ef74-a079587e79/]!",
-		"english": "Please keep this channel in english.",
-		"topic": "Can you please drop the topic and talk about something else?",
-		"lines": "Please try to keep your sentences on a single line to avoid getting silenced.",
-		"merge": "We're currently working on a merging tool to allow users to transfer their older scores from the old 'regular' server. It will be completed soon, as just the frontend is still being made.",
-		"relax": "We've combined the two Akatsuki servers (Regular, Relax), into a single server (which you are currently on!). To play relax, turn on the relax modification, and move to a different map; your stats, rank, and leaderboards should switch quickly. To go back to regular, simply turn off the mod and do the same.",
-		"team": "To see the Akatsuki staff lineup, please click (here)[https://akatsuki.pw/team/].",
-		"cmyui": "Generally, cmyui is just really a developer for the server. If you need help with something, please contact a member of the Support Team, or another staff member (Moderator, Administrator). Staff members can be found (here)[https://akatsuki.pw/team/]!"
-	}
 	key = message[0].lower()
-	if key not in messages:
-		return False
-	return messages[key]
+	callback = glob.db.fetch("SELECT callback FROM faq WHERE name = '{}'".format(key))
+
+	if callback is None:
+		return "That FAQ callback could not be found.."
+	return callback["callback"]
 
 def roll(fro, chan, message):
 	maxPoints = 100
