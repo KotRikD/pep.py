@@ -31,14 +31,14 @@ def bloodcatMessage(fro, beatmapID):
 		return "Sorry, I'm not able to provide a download link for this map :("
 
 	if privileges & 8388608: # The user is a premium member.. Give them a fast download.
-		return "[Premium] Download [https://akatsuki.pw/d/{} {}] from Akatsuki".format(
-			beatmap["beatmapset_id"],
-			beatmap["song_name"],
+		return "[Premium] Download [https://akatsuki.pw/d/{beatmapset_id} {song_name}] from Akatsuki // [Regular] Download [https://bloodcat.com/osu/s/{beatmapset_id} {song_name}] from Bloodcat".format(
+			beatmapset_id=beatmap["beatmapset_id"],
+			song_name=beatmap["song_name"]
 		)
 	else:
-		return "[Regular] Download [https://bloodcat.com/osu/s/{} {}] from Bloodcat".format(
-			beatmap["beatmapset_id"],
-			beatmap["song_name"],
+		return "[Regular] Download [https://bloodcat.com/osu/s/{beatmapset_id} {song_name}] from Bloodcat".format(
+			beatmapset_id=beatmap["beatmapset_id"],
+			song_name=beatmap["song_name"]
 		)
 
 """
@@ -59,18 +59,19 @@ TODO: Change False to None, because False doesn't make any sense
 def faq(fro, chan, message):
 	# TODO: Unhardcode this
 	messages = {
-		"rules": "Please make sure to check (Akatsuki's rules)[https://akatsuki.pw/doc/rules]; they are probably quite standard to what you are used to.",
+		"rules": "Please make sure to check (Akatsuki's rules)[https://akatsuki.pw/doc/rules/]; they are probably quite standard to what you are used to.",
 		"swearing": "Please don't abuse swearing.",
 		"spam": "Please don't spam.. It will only end up in many silences and sad gamers.",
 		"offend": "Please don't offend other players.",
-		"discord": "Akatsuki has a public discord! Click (here)[https://discord.gg/5cBtMPW] to join.",
-		"status": "Check the server status (here)[https://p.datadoghq.com/sb/71577ef74-a079587e79]!",
+		"discord": "Akatsuki has a public discord! Click (here)[https://discord.gg/5cBtMPW/] to join.",
+		"status": "Check the server status (here)[https://p.datadoghq.com/sb/71577ef74-a079587e79/]!",
 		"english": "Please keep this channel in english.",
 		"topic": "Can you please drop the topic and talk about something else?",
 		"lines": "Please try to keep your sentences on a single line to avoid getting silenced.",
 		"merge": "We're currently working on a merging tool to allow users to transfer their older scores from the old 'regular' server. It will be completed soon, as just the frontend is still being made.",
 		"relax": "We've combined the two Akatsuki servers (Regular, Relax), into a single server (which you are currently on!). To play relax, turn on the relax modification, and move to a different map; your stats, rank, and leaderboards should switch quickly. To go back to regular, simply turn off the mod and do the same.",
-		"team": "To see the Akatsuki staff lineup, please click (here)[https://akatsuki.pw/team"
+		"team": "To see the Akatsuki staff lineup, please click (here)[https://akatsuki.pw/team/].",
+		"cmyui": "Generally, cmyui is just really a developer for the server. If you need help with something, please contact a member of the Support Team, or another staff member (Moderator, Administrator). Staff members can be found (here)[https://akatsuki.pw/team/]!"
 	}
 	key = message[0].lower()
 	if key not in messages:
@@ -124,7 +125,7 @@ def moderated(fro, chan, message):
 		glob.channels.channels[chan].moderated = enable
 		return "This channel is {} in moderated mode!".format("now" if enable else "no longer")
 	except exceptions.moderatedPMException:
-		return "You are trying to put a private chat in moderated mode. ok retard."
+		return "You are trying to put a private chat in moderated mode.. Let that sink in for a second.."
 
 def kickAll(fro, chan, message):
 	# Kick everyone but mods/admins
@@ -139,7 +140,7 @@ def kickAll(fro, chan, message):
 		if i in glob.tokens.tokens:
 			glob.tokens.tokens[i].kick()
 
-	return "Whoops! Rip everyone."
+	return "All users have been kicked from Akatsuki."
 
 def kick(fro, chan, message):
 	# Get parameters
@@ -184,8 +185,9 @@ def silence(fro, chan, message):
 	userID = userUtils.getID(fro)
 
 	# Make sure target is not the bot / super admin
-	if targetUserID == 1001 and userID != 1001:
-		return "Nice try."
+	if targetUserID in [999, 1001] and userID != 1001:
+		log.cmyui("{} attempted to silence immortal user {}.".format(username, targetUserID), discord="cm")
+		return "No."
 
 	# Make sure the user exists
 	if not targetUserID:
@@ -232,7 +234,7 @@ def removeSilence(fro, chan, message):
 	targetUserID = userUtils.getIDSafe(target)
 	userID = userUtils.getID(fro)
 	if not targetUserID:
-		return "{}: user not found".format(target)
+		return "{}: user not found.".format(target)
 
 	# Send new silence end packet to user if he's online
 	targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True)
@@ -243,7 +245,7 @@ def removeSilence(fro, chan, message):
 		# user offline, remove islene ofnlt from db
 		userUtils.silence(targetUserID, 0, "", userID)
 
-	return "{}'s silence reset".format(target)
+	return "{}'s silence reset.".format(target)
 
 def ban(fro, chan, message):
 	# Get parameters
@@ -260,11 +262,12 @@ def ban(fro, chan, message):
 		return "{}: user not found".format(target)
 
 	# Make sure target is not the bot
-	if targetUserID == 1001 and userID != 1001:
-		return "Nice try."
+	if targetUserID in [999, 1001] and userID != 1001:
+		log.cmyui("{} attempted to restrict immortal user {}.".format(username, targetUserID), discord="cm")
+		return "Moments in gaming."
 
 	if not reason:
-		return "Please specify a reason for the ban."
+		return "Please specify a reason for the ban!"
 	
 	# Set allowed to 0
 	userUtils.ban(targetUserID)
@@ -276,7 +279,7 @@ def ban(fro, chan, message):
 
 	log.rap(userID, "has banned {} ({}) for {}".format(target, targetUserID, reason), True)
 	userUtils.appendNotes(targetUserID, "{} banned for: {}".format(username, reason))
-	return "RIP {}. You will not be missed.".format(target)
+	return "{} has been banned.".format(target)
 
 def unban(fro, chan, message):
 	# Get parameters
@@ -294,7 +297,7 @@ def unban(fro, chan, message):
 	userUtils.unban(targetUserID)
 
 	log.rap(userID, "has unbanned {}".format(target), True)
-	return "Welcome back {}!".format(target)
+	return "{} has been unbanned.".format(target)
 
 def restrict(fro, chan, message):
 	# Get parameters
@@ -311,12 +314,12 @@ def restrict(fro, chan, message):
 		return "{}: user not found".format(target)
 
 	# Make sure target is not the bot
-	if targetUserID == 1001 and userID != 1001:
+	if targetUserID in [999, 1001] and userID != 1001:
 		log.cmyui("{} attempted to restrict immortal user {}.".format(username, targetUserID), discord="cm")
-		return "Nice try."
+		return "Yea uhhhhhhhhhhhhh"
 
 	if not reason:
-		return "Please specify a reason for the restriction."
+		return "Please specify a reason for the restriction!"
 
 	# Put this user in restricted mode
 	userUtils.restrict(targetUserID)
@@ -406,7 +409,7 @@ def systemStatus(fro, chan, message):
 	# Final message
 	letsVersion = glob.redis.get("lets:version")
 	if letsVersion is None:
-		letsVersion = "\_(xd)_/"
+		letsVersion = "¯\_(ツ)_/¯"
 	else:
 		letsVersion = letsVersion.decode("utf-8")
 	msg = "pep.py bancho server v{}\n".format(glob.VERSION)
@@ -595,7 +598,7 @@ def tillerinoMods(fro, chan, message):
 				modsEnum += mods.SPUNOUT
 			elif i == "RX":
 				modsEnum += mods.RELAX
-			"""
+			""" Disabled since we uhhhhhhhhhhh fuck ap
 			elif i == "AP":
 				modsEnum += mods.RELAX2
 			"""
@@ -645,7 +648,7 @@ def tillerinoLast(fro, chan, message):
 		targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(fro), safe=True)
 		if chan.startswith("#") and not privileges & 8388608:
 			if targetToken is not None:
-				targetToken.enqueue(serverPackets.notification("The usage of !last in public channels is currently an Akatsuki!Premium donation perk."))
+				targetToken.enqueue(serverPackets.notification("The usage of !last in public channels is currently an Akatsuki Premium donation perk! More information can be found on the website."))
 			return False
 
 		data = glob.db.fetch("""SELECT beatmaps.song_name as sn, scores{relax}.*,
@@ -885,8 +888,9 @@ def enqueueRestriction(fro, chan, message):
 	userID = userUtils.getID(fro)
 
 	# Make sure target is not the bot / super admin
-	if targetUserID == 1001 and userID != 1001:
-		return "Nice try."
+	if targetUserID in [999, 1001] and userID != 1001:
+		log.cmyui("{} attempted to erestrict immortal user {}.".format(username, targetUserID), discord="cm")
+		return "Yeah?"
 
 	# Make sure the user exists
 	if not targetUserID:
@@ -950,7 +954,7 @@ def changeUsernameSelf(fro, chan, message): # For premium members to change thei
 	# Change their username
 	userUtils.changeUsername(userID, fro, newUsername)
 
-	# Ensure they are online (since it's only nescessary to kick/alert them if they're online), then do so if they are.
+	# Ensure they are online (since it's only nescessary to kick/alert them if they're online), then do so if they are
 	if len(tokens) == 0:
 		return "Something went wrong when grabbing your token(s). Please re-login and try again. If this persists, report the error to cmyui(#0425)."
 
@@ -969,8 +973,11 @@ def cmyuiSwitch(fro, chan, message): # Allow cmyui to switch between perm settin
 	if userID != 1001:
 		return "Funny joke."
 
-	if newPrivileges > 16777215 or newPrivileges < 0:
-		return "Invalid Value (0-16777215)"
+	if newPrivileges:
+		if newPrivileges > 16777215 or newPrivileges < 0:
+			return "Invalid Value (0-16777215)"
+		else: # If no privilege value is given, assume Super Admin
+			newPrivileges = 15728639
 
 	r = "Successfully updated your privileges to: " # Probably the ugliest thing ever
 	if newPrivileges == 0:
@@ -1028,7 +1035,7 @@ def cmyuiSwitch(fro, chan, message): # Allow cmyui to switch between perm settin
 	if userID == 1001:
 		glob.db.execute("UPDATE users SET privileges = {} WHERE id = 1001;".format(newPrivileges))
 	else:
-		return "No. and how did you get this far?"
+		return "No. And how did you get this far?"
 
 	return r
 
@@ -1040,7 +1047,7 @@ def changeUsername(fro, chan, message): # Change a users username, ingame.
 	userID = userUtils.getIDSafe(fro)
 	privileges = userUtils.getPrivileges(targetUserID) # grab this to make admins not able to change non-premium's usernames. nazi mode.
 
-	if targetUserID == 1001 and userID != 1001:
+	if targetUserID in [999, 1001] and userID != 1001:
 		return "Nope."
 
 	if not privileges & 8388608:
@@ -1072,7 +1079,6 @@ def changeUsername(fro, chan, message): # Change a users username, ingame.
 	return "Name successfully changed. It might take a while to change the username if the user is online on Bancho."
 
 def requestMap(fro, chan, message): # Splitting these up due to bancho explosions
-
 	# Put the gathered values into variables to be used later
 	messages = [m.lower() for m in message]  #!map rank set 3298432874
 	mapType = message[0] # Whether it is a full difficulty spread, or just a single map being requested
@@ -1109,7 +1115,6 @@ def requestMap(fro, chan, message): # Splitting these up due to bancho explosion
 	return "Your beatmap request has been submitted. Thank you!"
 
 def editMap(fro, chan, message): # miniature version of old editMap. Will most likely need to be worked on quite a bit.
-
 	# Put the gathered values into variables to be used later
 	messages = [m.lower() for m in message]  #!map rank set 3298432874
 	rankType = message[0]
@@ -1862,7 +1867,10 @@ def bloodcat(fro, chan, message):
 	else:
 		spectatorHostToken = glob.tokens.getTokenFromUserID(spectatorHostUserID, ignoreIRC=True)
 		if spectatorHostToken is None:
-			return "The spectator host is offline. If this makes no sense, please report it to [https://akatsuki.pw/u/1001 cmyui]."
+			if not chan.lower().startswith("#multi_") or not chan.lower().startswith("#spect_"):
+				return "This command only works in multiplayer or spectator chats."
+			else:
+				return "The spectator host is offline. If this makes no sense, please report it to [https://akatsuki.pw/u/1001 cmyui]."
 		beatmapID = spectatorHostToken.beatmapID
 	return bloodcatMessage(fro, beatmapID)
 
