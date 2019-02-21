@@ -427,7 +427,7 @@ def getPPMessage(userID, just_data = False):
 		currentAcc = token.tillerino[2]
 
 		# Send request to LETS api
-		resp = requests.get("http://127.0.0.1:5002/letsapi/v1/pp?b={}&m={}".format(currentMap, currentMods), timeout=10).text
+		resp = requests.get("http://127.0.0.1:5002/letsapi/v1/pp?b={}&m={}".format(currentMap, currentMods), timeout=60).text
 		data = json.loads(resp)
 
 		# Make sure status is in response data
@@ -1078,11 +1078,14 @@ def requestMap(fro, chan, message): # Splitting these up due to bancho explosion
 		return "Map requests are not permitted in regular channels, please do so in #request, or a PM to Charlotte."
 
 	# Grab beatmapData from db
-	beatmapData = glob.db.fetch("SELECT beatmapset_id, ranked FROM beatmaps WHERE beatmap_id = {} LIMIT 1;".format(mapID))
+	beatmapData = glob.db.fetch("SELECT beatmapset_id, ranked, blacklisted FROM beatmaps WHERE beatmap_id = {} LIMIT 1;".format(mapID))
 	previouslyRequested = glob.db.fetch("SELECT COUNT(id) FROM rank_requests WHERE bid = {} LIMIT 1;".format(mapID))
 
 	if previouslyRequested["COUNT(id)"] > 0:
 		return "This map has already been requested."
+
+	if beatmapData["blacklisted"] == 1:
+		return "This map has already been unranked/unloved by another member of the staff. It has been blacklisted, and cannot be re-elected."
 
 	if beatmapData is None:
 		return "We could not find that beatmap. Perhaps check you are using the BeatmapID (not BeatmapSetID), and ensure you typed it correctly."
@@ -1119,9 +1122,12 @@ def editMap(fro, chan, message): # miniature version of old editMap. Will most l
 
 	# Grab beatmapData from db
 	try:
-		beatmapData = glob.db.fetch("SELECT beatmapset_id, song_name, ranked FROM beatmaps WHERE beatmap_id = {} LIMIT 1".format(mapID))
+		beatmapData = glob.db.fetch("SELECT beatmapset_id, song_name, ranked, blacklisted FROM beatmaps WHERE beatmap_id = {} LIMIT 1".format(mapID))
 	except:
 		return "We could not find that beatmap. Perhaps check you are using the BeatmapID (not BeatmapSetID), and typed it correctly."
+
+	if beatmapData["blacklisted"] == 1:
+		return "This map has already been unranked/unloved by another member of the staff. It has been blacklisted, and cannot be re-elected."
 
 	# Handle gameMode
 	if 's' in gameMode.lower() or ('o' in gameMode.lower() and not 'm' in gameMode.lower() and not 'c' in gameMode.lower() and not 't' in gameMode.lower()):
@@ -1148,15 +1154,18 @@ def editMap(fro, chan, message): # miniature version of old editMap. Will most l
 		# Figure out which ranked status we're requesting to
 		if 'r' in rankType.lower() and 'u' not in rankType.lower():
 			rankType = 'rank'
+			blacklist = 0
 			rankTypeID = 2
 			freezeStatus = 1
 		elif 'l' in rankType.lower():
 			rankType = 'lov'
 			rankTypeID = 5
+			blacklist = 0
 			freezeStatus = 1
 		elif 'u' in rankType.lower() or 'g' in rankType.lower():
 			rankType = 'unrank'
 			rankTypeID = 0
+			blacklist = 1
 			freezeStatus = 0
 		else:
 			return "Please enter a valid ranked status (rank, love, unrank)."
@@ -1166,9 +1175,9 @@ def editMap(fro, chan, message): # miniature version of old editMap. Will most l
 
 		if mapType == 'set':
 			numDiffs = glob.db.fetch("SELECT COUNT(id) FROM beatmaps WHERE beatmapset_id = {}".format(beatmapData["beatmapset_id"]))
-			glob.db.execute("UPDATE beatmaps SET ranked = {}, ranked_status_freezed = {}, rankedby = {} WHERE beatmapset_id = {} LIMIT {}".format(rankTypeID, freezeStatus, userID, beatmapData["beatmapset_id"], numDiffs["COUNT(id)"]))
+			glob.db.execute("UPDATE beatmaps SET ranked = {}, ranked_status_freezed = {}, rankedby = {}, blacklisted = {} WHERE beatmapset_id = {} LIMIT {}".format(rankTypeID, freezeStatus, userID, blacklist, beatmapData["beatmapset_id"], numDiffs["COUNT(id)"]))
 		else:
-			glob.db.execute("UPDATE beatmaps SET ranked = {}, ranked_status_freezed = {}, rankedby = {} WHERE beatmap_id = {} LIMIT 1".format(rankTypeID, freezeStatus, userID, mapID ))
+			glob.db.execute("UPDATE beatmaps SET ranked = {}, ranked_status_freezed = {}, rankedby = {}, blacklisted = {} WHERE beatmap_id = {} LIMIT 1".format(rankTypeID, freezeStatus, userID, blacklist, mapID))
 
 		# Announce / Log to AP logs when ranked status is changed
 		log.rap(userID, "has {}ed beatmap ({}): {} ({}), on gamemode {}.".format(rankType, mapType, beatmapData["song_name"], mapID, gameMode), True)
