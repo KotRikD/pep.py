@@ -119,8 +119,8 @@ def handle(tornadoRequest):
 				responseToken.enqueue(serverPackets.notification("Your account has been automatically restricted due to a pending restriction not being having been dealt with.\n\nReason: {}".format(flagReason)))
 				userUtils.restrict(userID)
 				userUtils.setUserFlags(userID, 0)
-				log.cmyui("User {} has been automatically restricted due to not dealing with pending restriction. Reason : {}.".format(userID, flagReason), discord="cm")
-				log.rap(userID, "{} has been restricted due to a pending restriction. Reason: {}.".format(username, flagReason))
+				log.cmyui("{} has been automatically restricted due to not dealing with pending restriction. Reason: {}.".format(username, flagReason), discord="cm")
+				log.rap(userID, "has been restricted due to a pending restriction. Reason: {}.".format(flagReason))
 			else:
 				if "charge" in flagReason:
 					responseToken.enqueue(serverPackets.notification("Your account has been flagged with an automatic restriction.\n\nIt will occur at {time} if not dealt with.\n"
