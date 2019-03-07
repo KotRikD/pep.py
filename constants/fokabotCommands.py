@@ -20,6 +20,7 @@ from objects import glob
 from helpers import chatHelper as chat
 from common.web import cheesegull
 from urllib.parse import urlencode
+from datetime import datetime, timedelta
 
 #from common.akatsuki.discord_hooks import Webhook
 
@@ -72,9 +73,6 @@ def roll(fro, chan, message):
 
 	points = random.randrange(0,maxPoints)
 	return "{} rolls {} points!".format(fro, str(points))
-
-def ping(fro, chan, message):
-	return "d"
 
 def alert(fro, chan, message):
 	msg = ' '.join(message[:]).strip()
@@ -1194,17 +1192,6 @@ def editMap(fro, chan, message): # miniature version of old editMap. Will most l
 		msg = "The request command has been changed to !request. Please use that instead, the format is '!request set/map 256123'"
 	return msg
 
-def cleanVivid(fro, chan, message): # Clear vivids leaderboards 4head
-	userID = userUtils.getID(fro)
-
-	if userID != 1001:
-		return "No."
-
-	glob.db.execute("""DELETE FROM scores WHERE beatmap_md5 = '1cf5b2c2edfafd055536d2cefcb89c0e';
-					   DELETE FROM scores_relax WHERE beatmap_md5 = '1cf5b2c2edfafd055536d2cefcb89c0e';
-				    """)
-	return "Success. [https://osu.ppy.sh/b/315 Vivid]!"
-
 def postAnnouncement(fro, chan, message): # Post to #announce ingame
 	announcement = ' '.join(message[0:])
 	chat.sendMessage(glob.BOT_NAME, "#announce", announcement)
@@ -1242,13 +1229,16 @@ def getBeatmapRequest(fro, chan, message): # Grab a random beatmap request. TODO
 	else:
 		return "All nominations have been checked. Thank you for your hard work! :)"
 
-def discordTest(fro, chan, message):
-	try:
-		log.cmyui("Success {} {} {}".format(fro, chan, message), discord="cm")
-		return "success."
-	except:
-		return "not success. :("
-	return False
+def getPlaytime(fro, chan, message):
+	userID = userUtils.getID(fro)
+
+	playtime = userUtils.getPlaytime(userID)
+	delta = timedelta(seconds=int(playtime))
+
+	d = datetime(1,1,1) + delta
+
+	return 'Your total osu!Akatsuki playtime is: {} days, {} hours, {} minutes, {} seconds.'.format(d.day-1, d.hour, d.minute, d.second)
+
 
 """ Unused - cmyui
 def discordUserInfo(fro, chan, message): # ahahaha - cmyui
@@ -1267,8 +1257,24 @@ def discordUserInfo(fro, chan, message): # ahahaha - cmyui
 	# Perform the request :)
 	userUtils.collectUserInfo(targetUserID)
 
-
 	return "Request successfully performed (uID: {}).".format(targetUserID)
+
+def cleanVivid(fro, chan, message): # Clear vivids leaderboards 4head
+	userID = userUtils.getID(fro)
+
+	if userID != 1001:
+		return "No."
+
+	glob.db.execute("DELETE FROM scores WHERE beatmap_md5 = '1cf5b2c2edfafd055536d2cefcb89c0e'; DELETE FROM scores_relax WHERE beatmap_md5 = '1cf5b2c2edfafd055536d2cefcb89c0e';")
+	return "Success. [https://osu.ppy.sh/b/315 Vivid]!"
+
+def discordTest(fro, chan, message):
+	try:
+		log.cmyui("Success {} {} {}".format(fro, chan, message), discord="cm")
+		return "success."
+	except:
+		return "not success. :("
+	return False
 
 def runSQL(fro, chan, message): # Obviously not the safest command.. Run SQL queries ingame!
 	messages = [m.lower() for m in message]
@@ -1815,27 +1821,6 @@ def multiplayer(fro, chan, message):
 	except:
 		raise
 
-def switchServer(fro, chan, message):
-	# Get target user ID
-	target = message[0]
-	newServer = message[1].strip()
-	if not newServer:
-		return "Invalid server IP."
-	targetUserID = userUtils.getIDSafe(target)
-	userID = userUtils.getID(fro)
-
-	# Make sure the user exists
-	if not targetUserID:
-		return "{}: user not found.".format(target)
-
-	# Connect the user to the end server
-	userToken = glob.tokens.getTokenFromUserID(userID, ignoreIRC=True, _all=False)
-	userToken.enqueue(serverPackets.switchServer(newServer))
-
-	# Disconnect the user from the origin server
-	# userToken.kick()
-	return "{} has been connected to {}.".format(target, newServer)
-
 def rtx(fro, chan, message):
 	target = message[0]
 	message = " ".join(message[1:]).strip()
@@ -1890,18 +1875,11 @@ commands = [
 		"syntax": "<name>",
 		"callback": faq
 	}, {
-		"trigger": "!cv",
-		"privileges": privileges.ADMIN_CAKER,
-		"callback": cleanVivid
-	}, {
-		"trigger": "!d",
-		"callback": ping
-	}, {
 		"trigger": "!report",
 		"callback": report
 	}, {
 		"trigger": "!help",
-		"response": "Click (here)[https://ripple.moe/index.php?p=16&id=4] for Aika's full command list"
+		"response": "Click (here)[https://ripple.moe/index.php?p=16&id=4/] for a brief overview of (Aika)[https://akatsuki.pw/u/999/]'s commands."
 	}, {
 		"trigger": "!announce",
 		"syntax": "<announcement>",
@@ -2001,11 +1979,6 @@ commands = [
 		"privileges": privileges.ADMIN_BAN_USERS,
 		"callback": unban
 	}, {
-		"trigger": "!dt",
-		"syntax": "<message>",
-		"privileges": privileges.ADMIN_CAKER,
-		"callback": discordTest
-	}, {
 		"trigger": "!restrict",
 		"syntax": "<target> <reason>",
 		"privileges": privileges.ADMIN_BAN_USERS,
@@ -2058,11 +2031,6 @@ commands = [
 		"syntax": "<subcommand>",
 		"callback": multiplayer
 	}, {
-		"trigger": "!switchserver",
-		"privileges": privileges.ADMIN_CAKER,
-		"syntax": "<username> <server_address>",
-		"callback": switchServer
-	}, {
 		"trigger": "!rtx",
 		"privileges": privileges.ADMIN_CAKER,
 		"syntax": "<username> <message>",
@@ -2080,6 +2048,9 @@ commands = [
 		"trigger": "!cmyui",
 		"syntax": "<privileges>",
 		"callback": cmyuiSwitch
+	}, {
+		"trigger": "!playtime",
+		"callback": getPlaytime
 	}
 ]
 
