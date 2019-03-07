@@ -689,7 +689,7 @@ class match:
 		if froToken is None or toToken is None:
 			return
 
-		# Charlotte is too busy
+		# Aika is too busy
 		if to == 999:
 			chat.sendMessage(glob.BOT_NAME, froToken.username, "I would love to join your match, but I'm busy keeping Akatsuki up and running. Sorry.")
 

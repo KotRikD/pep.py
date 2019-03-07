@@ -385,7 +385,7 @@ class token:
 
 		:param seconds: silence length in seconds. If None, get it from db. Default: None
 		:param reason: silence reason. Default: empty string
-		:param author: userID of who has silenced the user. Default: 999 (Charlotte)
+		:param author: userID of who has silenced the user. Default: 999 (Aika)
 		:return:
 		"""
 		if seconds is None:
@@ -474,7 +474,7 @@ class token:
 
 	def checkRestricted(self):
 		"""
-		Check if this token is restricted. If so, send Charlotte message
+		Check if this token is restricted. If so, send Aika message
 
 		:return:
 		"""
@@ -498,7 +498,7 @@ class token:
 
 	def setRestricted(self):
 		"""
-		Set this token as restricted, send Charlotte message to user
+		Set this token as restricted, send Aika message to user
 		and send offline packet to everyone
 
 		:return:
@@ -508,7 +508,7 @@ class token:
 
 	def resetRestricted(self):
 		"""
-		Send Charlotte message to alert the user that he has been unrestricted
+		Send Aika message to alert the user that he has been unrestricted
 		and he has to log in again.
 
 		:return:

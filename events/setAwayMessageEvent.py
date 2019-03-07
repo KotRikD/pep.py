@@ -13,7 +13,7 @@ def handle(userToken, packetData):
 	# Set token away message
 	userToken.awayMessage = packetData["awayMessage"]
 
-	# Send private message from Charlotte
+	# Send private message from Aika
 	if packetData["awayMessage"] == "":
 		fokaMessage = "Your away message has been reset."
 	else:

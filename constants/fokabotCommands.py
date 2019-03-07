@@ -1078,7 +1078,7 @@ def requestMap(fro, chan, message): # Splitting these up due to bancho explosion
 	privileges = userUtils.getPrivileges(userID)
 
 	if chan.startswith('#') and chan != '#request' and not privileges & 8388608: # only run in pms or #request, unless premium
-		return "Map requests are not permitted in regular channels, please do so in #request, or a PM to Charlotte."
+		return "Map requests are not permitted in regular channels, please do so in #request, or a PM to {}.".format(glob.BOT_NAME)
 
 	# Grab beatmapData from db
 	beatmapData = glob.db.fetch("SELECT beatmapset_id, ranked, blacklisted FROM beatmaps WHERE beatmap_id = {} LIMIT 1;".format(mapID))
@@ -1121,7 +1121,7 @@ def editMap(fro, chan, message): # miniature version of old editMap. Will most l
 
 	# Only allow users to request maps in #request channel. Heavily reduced spam!
 	if chan.startswith('#') and chan != '#admin' and not privileges & 8388608:
-		return "Map ranking is not permitted in regular channels, please do so in PMs with Charlotte (or #admin if administrator)."
+		return "Map ranking is not permitted in regular channels, please do so in PMs with {} (or #admin if administrator).".format(glob.BOT_NAME)
 
 	# Grab beatmapData from db
 	try:
@@ -1901,7 +1901,7 @@ commands = [
 		"callback": report
 	}, {
 		"trigger": "!help",
-		"response": "Click (here)[https://ripple.moe/index.php?p=16&id=4] for Charlotte's full command list"
+		"response": "Click (here)[https://ripple.moe/index.php?p=16&id=4] for Aika's full command list"
 	}, {
 		"trigger": "!announce",
 		"syntax": "<announcement>",
@@ -1947,7 +1947,7 @@ commands = [
 		"privileges": privileges.ADMIN_KICK_USERS,
 		"callback": kick
 	}, {
-		"trigger": "!charlotte reconnect",
+		"trigger": "!aika reconnect",
 		"privileges": privileges.ADMIN_MANAGE_SERVERS,
 		"callback": fokabotReconnect
 	}, {
