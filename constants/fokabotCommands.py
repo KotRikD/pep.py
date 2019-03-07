@@ -31,7 +31,7 @@ def bloodcatMessage(fro, beatmapID):
 		return "Sorry, I'm not able to provide a download link for this map :("
 
 	if privileges & 8388608: # The user is a premium member.. Give them a fast download.
-		return "[Premium] Download [https://akatsuki.pw/d/{beatmapset_id} {song_name}] from Akatsuki // [Regular] Download [https://bloodcat.com/osu/s/{beatmapset_id} {song_name}] from Bloodcat".format(
+		return "[Premium] Download [https://akatsuki.pw/d/{beatmapset_id} {song_name}] from Akatsuki // [https://bloodcat.com/osu/s/{beatmapset_id} {song_name}] from Bloodcat".format(
 			beatmapset_id=beatmap["beatmapset_id"],
 			song_name=beatmap["song_name"]
 		)
@@ -632,6 +632,8 @@ def tillerinoLast(fro, chan, message):
 		userID = userUtils.getID(fro)
 		privileges = userUtils.getPrivileges(userID)
 		targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(fro), safe=True)
+
+		# If the user is not a premium member, disallow and send them a notification explaining
 		if chan.startswith("#") and not privileges & 8388608:
 			if targetToken is not None:
 				targetToken.enqueue(serverPackets.notification("The usage of !last in public channels is currently an Akatsuki Premium donation perk! More information can be found on the website."))
@@ -642,9 +644,10 @@ def tillerinoLast(fro, chan, message):
 			FROM scores{relax}
 			LEFT JOIN beatmaps ON beatmaps.beatmap_md5=scores{relax}.beatmap_md5
 			LEFT JOIN users ON users.id = scores{relax}.userid
-			WHERE users.username = '{}' AND scores{relax}.completed > 1
+			WHERE users.username = '{}'
 			ORDER BY scores{relax}.time DESC
 			LIMIT 1""".format(fro, relax="_relax" if targetToken.relax else ""))
+
 		if data is None:
 			return False
 
@@ -962,8 +965,8 @@ def cmyuiSwitch(fro, chan, message): # Allow cmyui to switch between perm settin
 	if newPrivileges:
 		if newPrivileges > 16777215 or newPrivileges < 0:
 			return "Invalid Value (0-16777215)"
-		else: # If no privilege value is given, assume Super Admin
-			newPrivileges = 15728639
+	else: # If no privilege value is given, assume Super Admin
+		newPrivileges = 15728639
 
 	r = "Successfully updated your privileges to: " # Probably the ugliest thing ever
 	if newPrivileges == 0:
@@ -1036,8 +1039,8 @@ def changeUsername(fro, chan, message): # Change a users username, ingame.
 	if targetUserID in [999, 1001] and userID != 1001:
 		return "Nope."
 
-	if not privileges & 8388608:
-		return "The target user is not an Akatsuki Premium member."
+	if not privileges & 4 and userID != 1001:
+		return "The target user is not an Akatsuki Supporter."
 
 	# Get safe username
 	newUsernameSafe = userUtils.safeUsername(newUsername)

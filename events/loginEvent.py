@@ -265,7 +265,7 @@ def handle(tornadoRequest):
 		# (we don't use enqueue because we don't have a token since login has failed)
 		responseData += serverPackets.loginFailed()
 		responseData += serverPackets.notification("We see what you're doing..")
-		log.cmyui("User #{} has triggered invalidArgumentsException in loginEvent.py", discord="cm")
+		log.cmyui("User {} has triggered invalidArgumentsException in loginEvent.py".format(userID), discord="cm")
 	except exceptions.loginBannedException:
 		# Login banned error packet
 		responseData += serverPackets.loginBanned()
@@ -291,7 +291,7 @@ def handle(tornadoRequest):
 		# (we don't use enqueue because we don't have a token since login has failed)
 		responseData += serverPackets.forceUpdate()
 		responseData += serverPackets.notification("Custom clients of ANY kind are NOT PERMITTED on Akatsuki. Please login using the current osu! client.")
-		log.cmyui("User {} has triggered haxException in loginEvent.py", discord="cm")
+		log.cmyui("User {} has logged in with a VERY old client".format(userID), discord="cm")
 	except:
 		log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
 	finally:
